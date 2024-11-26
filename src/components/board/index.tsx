@@ -7,7 +7,7 @@ const Board = () => {
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
-    const context = canvas.getContext("2d");
+    // const context = canvas.getContext("2d");
 
     //* When Component is mounted
     canvas.width = window.innerWidth;
