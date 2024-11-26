@@ -5,6 +5,8 @@ const COLORS = {
   BLUE: "#0000FF",
   ORANGE: "#FFA500",
   YELLOW: "#FFFF00",
+  PURPLE: "#800080",
+  WHITE: "#FFFFFF",
 };
 
 const MENU_ITEMS = {
@@ -13,6 +15,6 @@ const MENU_ITEMS = {
   UNDO: "UNDO",
   REDO: "REDO",
   DOWNLOAD: "DOWNLOAD",
-};
+} as const;
 
 export { COLORS, MENU_ITEMS };
