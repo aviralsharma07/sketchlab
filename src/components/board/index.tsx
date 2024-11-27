@@ -8,6 +8,8 @@ import { useDispatch, useSelector } from "react-redux";
 const Board = () => {
   const dispatch = useDispatch();
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const drawHistory = useRef<Array<ImageData>>([]);
+  const historyPointer = useRef<number>(0);
   const shouldDraw = useRef<boolean>(false);
   const { activeMenuItem, actionMenuItem } = useSelector((state: ReduxState) => state.menu);
   const { color, size } = useSelector((state: ReduxState) => state.toolbox[activeMenuItem]);
@@ -25,6 +27,14 @@ const Board = () => {
       anchor.href = URL;
       anchor.download = "sketchlab-image.jpg";
       anchor.click();
+    } else if (actionMenuItem === MENU_ITEMS.UNDO) {
+      if (historyPointer.current > 0) historyPointer.current -= 1;
+      const imageData = drawHistory.current[historyPointer.current];
+      context?.putImageData(imageData, 0, 0);
+    } else if (actionMenuItem === MENU_ITEMS.REDO) {
+      if (historyPointer.current < drawHistory.current.length - 1) historyPointer.current += 1;
+      const imageData = drawHistory.current[historyPointer.current];
+      context?.putImageData(imageData, 0, 0);
     }
 
     dispatch(actionItemClick(null));
@@ -79,6 +89,9 @@ const Board = () => {
     };
     const handleMouseUp = (e: MouseEvent) => {
       shouldDraw.current = false;
+      const imageData = context?.getImageData(0, 0, canvas.width, canvas.height);
+      drawHistory.current.push(imageData as ImageData);
+      historyPointer.current = drawHistory.current.length - 1;
     };
 
     canvas.addEventListener("mousedown", handleMouseDown);
