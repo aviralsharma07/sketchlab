@@ -1,9 +1,10 @@
 "use client";
 import { MENU_ITEMS } from "@/lib/constants";
 import { actionItemClick } from "@/lib/redux/menuSlice";
-import { ReduxState } from "@/lib/redux/types";
+import { ReduxState, ToolItem } from "@/lib/redux/types";
 import { useEffect, useLayoutEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { socket } from "@/lib/socket";
 
 const Board = () => {
   const dispatch = useDispatch();
@@ -13,8 +14,6 @@ const Board = () => {
   const shouldDraw = useRef<boolean>(false);
   const { activeMenuItem, actionMenuItem } = useSelector((state: ReduxState) => state.menu);
   const { color, size } = useSelector((state: ReduxState) => state.toolbox[activeMenuItem]);
-  console.log("color...", color);
-  console.log("size...", size);
 
   useEffect(() => {
     if (!canvasRef.current) return;
@@ -45,14 +44,24 @@ const Board = () => {
     const canvas = canvasRef.current;
     const context = canvas.getContext("2d");
 
-    const changeConfig = () => {
+    const changeConfig = (color: string, size: number) => {
       if (context) {
         context.strokeStyle = color;
         context.lineWidth = size;
       }
     };
 
-    changeConfig();
+    const handleChangeConfig = (config: { color: string; size: number }) => {
+      changeConfig(config.color, config.size);
+    };
+
+    changeConfig(color, size);
+
+    socket.on("changeConfig", handleChangeConfig);
+
+    return () => {
+      socket.off("changeConfig", handleChangeConfig);
+    };
   }, [color, size]);
 
   //! UseLayoutEffect is used to draw on the canvas before browser paints the screen to avoid flickering effect on the canvas while drawing on it
@@ -82,10 +91,12 @@ const Board = () => {
     const handleMouseDown = (e: MouseEvent) => {
       shouldDraw.current = true;
       beginPath(e.clientX, e.clientY);
+      socket.emit("beginPath", { x: e.clientX, y: e.clientY });
     };
     const handleMouseMove = (e: MouseEvent) => {
       if (!shouldDraw.current) return;
       drawLine(e.clientX, e.clientY);
+      socket.emit("drawLine", { x: e.clientX, y: e.clientY });
     };
     const handleMouseUp = (e: MouseEvent) => {
       shouldDraw.current = false;
@@ -94,14 +105,28 @@ const Board = () => {
       historyPointer.current = drawHistory.current.length - 1;
     };
 
+    const handleBeginPath = (data: { x: number; y: number }) => {
+      beginPath(data.x, data.y);
+    };
+
+    const handleDrawLine = (data: { x: number; y: number }) => {
+      drawLine(data.x, data.y);
+    };
+
     canvas.addEventListener("mousedown", handleMouseDown);
     canvas.addEventListener("mousemove", handleMouseMove);
     canvas.addEventListener("mouseup", handleMouseUp);
+
+    socket.on("beginPath", handleBeginPath);
+    socket.on("drawLine", handleDrawLine);
 
     return () => {
       canvas.removeEventListener("mousedown", handleMouseDown);
       canvas.removeEventListener("mousemove", handleMouseMove);
       canvas.removeEventListener("mouseup", handleMouseUp);
+
+      socket.off("beginPath", handleBeginPath);
+      socket.off("drawLine", handleDrawLine);
     };
   }, []);
   return <canvas ref={canvasRef}></canvas>;

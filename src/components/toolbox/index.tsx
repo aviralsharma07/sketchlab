@@ -5,6 +5,7 @@ import { COLORS, MENU_ITEMS } from "@/lib/constants";
 import { ReduxState } from "@/lib/redux/types";
 import { changeBrushSize, changeColor } from "@/lib/redux/toolboxSlice";
 import cx from "classnames";
+import { socket } from "@/lib/socket";
 
 const Toolbox = () => {
   const dispatch = useDispatch();
@@ -14,12 +15,13 @@ const Toolbox = () => {
   const showBrushToolOption = activeMenuItem === MENU_ITEMS.PENCIL || MENU_ITEMS.ERASER;
 
   const updateBrushSize = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log(e.target.value);
     dispatch(changeBrushSize({ item: activeMenuItem, size: parseInt(e.target.value) }));
+    socket.emit("changeConfig", { color, size: parseInt(e.target.value) });
   };
 
   const updateColor = (color: string) => {
     dispatch(changeColor({ item: activeMenuItem, color }));
+    socket.emit("changeConfig", { color, size });
   };
 
   return (
