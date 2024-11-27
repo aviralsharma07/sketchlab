@@ -14,7 +14,9 @@ export const menuSlice = createSlice({
     menuItemClick: (state, action) => {
       state.activeMenuItem = action.payload;
     },
-    actionItemClick: (state, action) => {},
+    actionItemClick: (state, action) => {
+      state.actionMenuItem = action.payload;
+    },
   },
 });
 
