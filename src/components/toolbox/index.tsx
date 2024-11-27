@@ -9,7 +9,7 @@ import cx from "classnames";
 const Toolbox = () => {
   const dispatch = useDispatch();
   const activeMenuItem = useSelector((state: ReduxState) => state.menu.activeMenuItem);
-  const { color } = useSelector((state: ReduxState) => state.toolbox[activeMenuItem]);
+  const { color, size } = useSelector((state: ReduxState) => state.toolbox[activeMenuItem]);
   const showStrokeToolOption = activeMenuItem === MENU_ITEMS.PENCIL;
   const showBrushToolOption = activeMenuItem === MENU_ITEMS.PENCIL || MENU_ITEMS.ERASER;
 
@@ -44,7 +44,7 @@ const Toolbox = () => {
         <div className={styles.toolboxItem}>
           <h4 className={styles.toolboxText}>Brush Size</h4>
           <div className={styles.itemContainer}>
-            <input type="range" min={1} max={10} step={1} onChange={updateBrushSize} />
+            <input type="range" min={1} max={10} step={1} onChange={updateBrushSize} value={size} />
           </div>
         </div>
       )}
